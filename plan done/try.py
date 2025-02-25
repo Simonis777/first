@@ -1,0 +1,155 @@
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QPushButton, QAction, QLineEdit, QMessageBox
+from PyQt5.QtChart import QChart, QChartView, QBarSet, QBarSeries, QBarCategoryAxis
+from PyQt5.QtGui import QPainter, QPixmap
+import sys
+
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(800, 600)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.front = QtWidgets.QLabel(self.centralwidget)
+        self.front.setGeometry(QtCore.QRect(61, 34, 661, 61))
+        self.front.setObjectName("front")
+        self.layoutWidget = QtWidgets.QWidget(self.centralwidget)
+        self.layoutWidget.setGeometry(QtCore.QRect(20, 140, 741, 31))
+        self.layoutWidget.setObjectName("layoutWidget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.layoutWidget)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.filepath = QtWidgets.QLabel(self.layoutWidget)
+        self.filepath.setObjectName("filepath")
+        self.horizontalLayout.addWidget(self.filepath)
+        self.path = QtWidgets.QLineEdit(self.layoutWidget)
+        self.path.setObjectName("path")
+        self.horizontalLayout.addWidget(self.path)
+        self.scaner = QtWidgets.QPushButton(self.layoutWidget)
+        self.scaner.setObjectName("scaner")
+        self.horizontalLayout.addWidget(self.scaner)
+        self.layoutWidget1 = QtWidgets.QWidget(self.centralwidget)
+        self.layoutWidget1.setGeometry(QtCore.QRect(30, 200, 721, 341))
+        self.layoutWidget1.setObjectName("layoutWidget1")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.layoutWidget1)
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.verticalLayout = QtWidgets.QVBoxLayout()
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.pic = QtWidgets.QLabel(self.layoutWidget1)
+        self.pic.setFrameShape(QtWidgets.QFrame.Panel)
+        self.pic.setLineWidth(1)
+        self.pic.setMidLineWidth(0)
+        self.pic.setText("")
+        self.pic.setObjectName("pic")
+        self.verticalLayout.addWidget(self.pic)
+        self.check = QtWidgets.QPushButton(self.layoutWidget1)
+        self.check.setObjectName("check")
+        self.verticalLayout.addWidget(self.check)
+        self.horizontalLayout_2.addLayout(self.verticalLayout)
+        self.bar_chart = QtWidgets.QLabel(self.layoutWidget1)
+        self.bar_chart.setFrameShape(QtWidgets.QFrame.Panel)
+        self.bar_chart.setText("")
+        self.bar_chart.setObjectName("bar_chart")
+        self.horizontalLayout_2.addWidget(self.bar_chart)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 26))
+        self.menubar.setObjectName("menubar")
+        self.menu = QtWidgets.QMenu(self.menubar)
+        self.menu.setObjectName("menu")
+        self.menu_2 = QtWidgets.QMenu(self.menubar)
+        self.menu_2.setObjectName("menu_2")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+        self.action1 = QtWidgets.QAction(MainWindow)
+        self.action1.setObjectName("action1")
+        self.actiond = QtWidgets.QAction(MainWindow)
+        self.actiond.setObjectName("actiond")
+        self.menu.addAction(self.action1)
+        self.menu_2.addAction(self.actiond)
+        self.menubar.addAction(self.menu.menuAction())
+        self.menubar.addAction(self.menu_2.menuAction())
+
+        self.emotion_list = ["afraid", "angry", "disgust", "happy", "neutral", "sad", "surprise"]
+
+        self.draw_bar_chart()
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+        self.scaner.clicked.connect(self.openfile)
+        self.path.returnPressed.connect(self.openfile_straight)
+        self.check.clicked.connect(self.face_recognition)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "图像识别情绪"))
+        self.check.setText(_translate("MainWindow", "确认"))
+        self.filepath.setText(_translate("MainWindow", "图片路径"))
+        self.scaner.setText(_translate("MainWindow", "浏览"))
+        self.menu.setTitle(_translate("MainWindow", "项目说明"))
+        self.menu_2.setTitle(_translate("MainWindow", "使用介绍"))
+        self.action1.setText(_translate("MainWindow", "该项目目的在于完成一个简单的面部情绪识别任务"))
+        self.actiond.setText(_translate("MainWindow", "输入图像路径后，点击确认，之后即会呈现分析数据"))
+
+    def openfile(self):
+        file, _ = QtWidgets.QFileDialog.getOpenFileName(None, "选择文件", "./", "All Files(*)")
+        self.path.clear()
+        self.path.setText(file)
+        self.path = file
+        pic = QtGui.QPixmap(file)
+        pic = pic.scaled(Qt.KeepAspectRatio)
+        self.pic.setPixmap(pic)
+
+    def openfile_straight(self):
+        self.path = self.path.text()
+        pic = QtGui.QPixmap(self.path)
+        pic = pic.scaled(251, 241, Qt.KeepAspectRatio)
+        self.pic.setPixmap(pic)
+
+    def draw_bar_chart(self, emotion_predict=[0, 0, 0, 0, 0, 1, 0]):
+        self.bar_chart.clear()
+        set = QBarSet('Emotion Recognition')
+        set << emotion_predict[0] << emotion_predict[1] << emotion_predict[2] << emotion_predict[3] << emotion_predict[4] << emotion_predict[5] << emotion_predict[6]
+
+        series = QBarSeries()
+        series.append(set)
+        temp_chart = QChart()
+        temp_chart.removeAllSeries()
+        temp_chart.addSeries(series)
+        temp_chart.setTitle('Emotion Recognition')
+        temp_chart.setAnimationOptions(QChart.SeriesAnimations)
+        axis = QBarCategoryAxis()
+        axis.append(self.emotion_list)
+        temp_chart.createDefaultAxes()
+        temp_chart.setAxisX(axis, series)
+        temp_chart.legend().setVisible(False)
+
+        chartview = QChartView(temp_chart, self.centralwidget)
+        chartview.setGeometry(QtCore.QRect(320, 130, 261, 190))
+        chartview.setObjectName("chart")
+
+        pixmap = QPixmap(chartview.size())
+        painter = QPainter(pixmap)
+        chartview.render(painter)
+        painter.end()
+        self.bar_chart.setPixmap(pixmap)
+        self.bar_chart.update()
+
+    def face_recognition(self):
+        emotion_predict = range(1, 8)
+        emotion = dict(zip(self.emotion_list, emotion_predict))
+        self.draw_bar_chart(emotion_predict)
+        QMessageBox.information(None, "Emotion Recognition", "The emotion is %s" % max(emotion, key=emotion.get))
+
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
